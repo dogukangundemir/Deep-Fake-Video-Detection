@@ -1,87 +1,86 @@
-# ────────────────────────────────────────────────────────────────
-# src/test_viz.py   (DROP-IN REPLACEMENT)
-# ────────────────────────────────────────────────────────────────
-import os, argparse, torch, numpy as np, pandas as pd, matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
+import os, argparse, torch, numpy as np, pandas as pd, matplotlib.pyplot as plt, seaborn as sns
+from sklearn.metrics import roc_curve, auc ,roc_auc_score,precision_recall_curve, average_precision_score, \
+                            confusion_matrix, accuracy_score, f1_score
 from torch.utils.data import DataLoader, Subset
-from tqdm import tqdm
-from dataset import FakeFrameDataset
-from model   import create_model
 from sklearn.model_selection import StratifiedGroupKFold
+from dataset import DFDCFrames                
+from model   import build_model
+from config  import BACKBONE, DROPOUT_P, BATCH_SIZE, SEED
 
-# ── helpers ─────────────────────────────────────────────────────
-def infer_on_fold(meta_csv, frames_dir, model_path, backbone, dropout, device):
-    df = pd.read_csv(meta_csv)
-    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+def save_roc(y, p, path):
+    fpr,tpr,_ = roc_curve(y,p); roc_auc = auc(fpr,tpr)
+    plt.figure(); plt.plot(fpr,tpr,label=f"AUC={roc_auc:.3f}")
+    plt.plot([0,1],[0,1],'--'); plt.xlabel('FPR'); plt.ylabel('TPR')
+    plt.title('ROC curve'); plt.legend(); plt.tight_layout(); plt.savefig(path, dpi=300); plt.close()
+
+def save_pr(y, p, path):
+    prec,rec,_=precision_recall_curve(y,p)
+    ap=average_precision_score(y,p)
+    plt.figure(); plt.plot(rec,prec,label=f"AP={ap:.3f}")
+    plt.xlabel('Recall'); plt.ylabel('Precision'); plt.title('PR curve')
+    plt.legend(); plt.tight_layout(); plt.savefig(path,dpi=300); plt.close()
+
+def save_cm(y, p, path):
+    cm = confusion_matrix(y, np.array(p) > 0.5, labels=[0,1])
+    sns.heatmap(cm,annot=True,fmt='d',cmap='Blues')
+    plt.title('Confusion matrix'); plt.tight_layout(); plt.savefig(path,dpi=300); plt.close()
+
+def save_bar(auc_v,acc_v,f1_v,path):
+    plt.figure(); sns.barplot(x=['AUC','ACC','F1'],y=[auc_v,acc_v,f1_v])
+    plt.ylim(0,1); plt.title('Score summary'); plt.tight_layout(); plt.savefig(path,dpi=300); plt.close()
+
+def save_grid(df, frames_dir, tag, path, top_n=9, largest=True):
+    subset = (df[df.true==(0 if tag=='FP' else 1)]
+              .sort_values('pred',ascending=not largest).head(top_n))
+    cols = int(np.sqrt(top_n)); rows = int(np.ceil(top_n/cols))
+    plt.figure(figsize=(cols*3, rows*3))
+    for i,row in enumerate(subset.itertuples()):
+        img = plt.imread(os.path.join(frames_dir,'train',row.video_id,f"crop_{int(row.frame)}.jpg"))
+        ax=plt.subplot(rows,cols,i+1); ax.imshow(img); ax.axis('off')
+        ax.set_title(f"p={row.pred:.2f}")
+    plt.suptitle(f"{tag} samples"); plt.tight_layout(); plt.savefig(path,dpi=300); plt.close()
+
+def run(a):
+    os.makedirs(a.out_dir, exist_ok=True)
+    
+    df = pd.read_csv(a.meta_csv)
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=SEED)
     _, test_idx = list(sgkf.split(df, df.label, df.video_id))[-1]
+    ds = DFDCFrames(a.meta_csv, os.path.join(a.frames_dir,'train'), "val")
+    dl = DataLoader(Subset(ds, test_idx), batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
 
-    ds = FakeFrameDataset(meta_csv, frames_dir, mode='train')
-    loader = DataLoader(Subset(ds, test_idx), batch_size=32, shuffle=False)
-
-    dev = torch.device(device)
-    net = create_model(backbone, pretrained=False, dropout=dropout)
-    net.load_state_dict(torch.load(model_path, map_location=dev), strict=False)
+    
+    dev=torch.device(a.device)
+    net=build_model(a.backbone, a.dropout); net.load_state_dict(torch.load(a.model,map_location=dev),strict=False)
     net.to(dev).eval()
 
-    preds, truths = [], []
+   
+    preds, y = [], []
     with torch.no_grad():
-        for x, y in loader:
-            preds += net(x.to(dev)).squeeze(1).cpu().sigmoid().tolist()
-            truths += y.tolist()
+        for x,t in dl:
+            preds += torch.sigmoid(net(x.to(dev)).squeeze(1)).cpu().tolist()
+            y     += t.tolist()
+    df_test = df.iloc[test_idx].copy(); df_test['pred']=preds; df_test['true']=y
 
-    df_test = df.iloc[test_idx].copy()
-    df_test['pred'] = preds
-    df_test['true'] = truths
-    return df_test
-
-def plot_roc(df, path):
-    fpr, tpr, _ = roc_curve(df.true, df.pred)
-    plt.figure(); plt.plot(fpr, tpr, label=f"AUC={auc(fpr,tpr):.3f}")
-    plt.plot([0,1],[0,1],'--'); plt.xlabel('FPR'); plt.ylabel('TPR')
-    plt.title('ROC (held-out fold)'); plt.legend(); plt.tight_layout()
-    plt.savefig(path); plt.close()
-
-def plot_cm(df, path):
-    cm = confusion_matrix(df.true, df.pred>0.5, labels=[0,1])
-    disp = ConfusionMatrixDisplay(cm, display_labels=['Real','Fake'])
-    fig, ax = plt.subplots(); disp.plot(ax=ax); plt.title('Confusion Matrix')
-    plt.tight_layout(); plt.savefig(path); plt.close()
-
-def plot_examples(df, frames_dir, out_path, tag, top_n=3, largest=True):
-    sub = (df[df.true==(0 if tag=='FP' else 1)]
-           .sort_values('pred', ascending=not largest).head(top_n))
-    plt.figure(figsize=(top_n*3,3))
-    for i,row in enumerate(sub.itertuples()):
-        img = plt.imread(os.path.join(frames_dir, row.video_id, f"crop_{int(row.frame)}.jpg"))
-        ax = plt.subplot(1, top_n, i+1); ax.imshow(img); ax.axis('off')
-        ax.set_title(f"{tag}\np={row.pred:.2f}")
-    plt.tight_layout(); plt.savefig(out_path); plt.close()
-
-# ── main entry ──────────────────────────────────────────────────
-def main(a):
-    os.makedirs(a.out_dir, exist_ok=True)
-    df = infer_on_fold(a.meta_csv, a.frames_dir, a.model, a.backbone, a.dropout, a.device)
-
-    plot_roc(df, os.path.join(a.out_dir,'roc_test.png'))
-    plot_cm(df,  os.path.join(a.out_dir,'cm_test.png'))
-    plot_examples(df, a.frames_dir, os.path.join(a.out_dir,'fp_test.png'), 'FP', a.num_samples, largest=True)
-    plot_examples(df, a.frames_dir, os.path.join(a.out_dir,'fn_test.png'), 'FN', a.num_samples, largest=False)
-
-    from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
-    print(f"AUC {roc_auc_score(df.true,df.pred):.4f}  "
-          f"ACC {accuracy_score(df.true,df.pred>0.5):.4f}  "
-          f"F1 {f1_score(df.true,df.pred>0.5):.4f}")
-    print("Plots saved to", a.out_dir)
+    
+    save_roc(y,preds,f"{a.out_dir}/roc_curve.png")
+    save_pr (y,preds,f"{a.out_dir}/pr_curve.png")
+    save_cm (y,preds,f"{a.out_dir}/cmatrix.png")
+    auc_val = roc_auc_score(y, preds)
+    acc_val = accuracy_score(y, np.array(preds) > 0.5)
+    f1_val  = f1_score     (y, np.array(preds) > 0.5)
+    save_bar(auc_val, acc_val, f1_val, f"{a.out_dir}/metrics_bar.png")
+    save_grid(df_test,a.frames_dir,'FP',f"{a.out_dir}/false_pos_grid.png",top_n=9,largest=True)
+    save_grid(df_test,a.frames_dir,'FN',f"{a.out_dir}/false_neg_grid.png",top_n=9,largest=False)
+    print("Saved all figures to", a.out_dir)
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument('--meta-csv',    required=True)
-    p.add_argument('--frames-dir',  required=True)
-    p.add_argument('--model',       required=True)
-    p.add_argument('--backbone',    default='efficientnet_b0')
-    p.add_argument('--dropout',     type=float, default=0.0)   # <-- NOW ACCEPTED
-    p.add_argument('--device',      default='cuda')
-    p.add_argument('--out-dir',     default='outputs/test_viz')
-    p.add_argument('--num-samples', type=int, default=3)
-    args = p.parse_args(); main(args)
-# ────────────────────────────────────────────────────────────────
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--model',      required=True)
+    ap.add_argument('--meta-csv',   required=True)
+    ap.add_argument('--frames-dir', required=True)
+    ap.add_argument('--backbone',   default=BACKBONE)
+    ap.add_argument('--dropout',    type=float, default=DROPOUT_P)
+    ap.add_argument('--device',     default='cuda')
+    ap.add_argument('--out-dir',    default='outputs/test_viz')
+    args = ap.parse_args(); run(args)

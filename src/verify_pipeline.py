@@ -5,7 +5,7 @@ from glob import glob
 
 def show_pair(raw, crop):
     fig, axes = plt.subplots(1,2, figsize=(8,4))
-    axes[0].imshow(raw[...,::-1])  # BGR→RGB
+    axes[0].imshow(raw[...,::-1])  
     axes[0].set_title("Raw Frame")
     axes[1].imshow(crop[...,::-1])
     axes[1].set_title("MTCNN Crop")
@@ -15,7 +15,6 @@ def show_pair(raw, crop):
     plt.show()
 
 if __name__ == "__main__":
-    # adjust to one of your train subfolders:
     sub = os.path.join('data','frames','train', os.listdir('data/frames/train')[0])
     raws  = sorted(glob(os.path.join(sub, 'raw_*.jpg')))
     crops = sorted(glob(os.path.join(sub, 'crop_*.jpg')))

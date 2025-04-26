@@ -1,10 +1,10 @@
 torch==2.2.2+cu117       -f https://download.pytorch.org/whl/torch_stable.html
 torchvision==0.17.2+cu117
 timm==0.9.16
-facenet-pytorch==2.5.3
-albumentations==1.4.7
+facenet-pytorch==2.5.3nvidia-smi
+albumentations==2.0.5
 pandas==1.5.3
-numpy<2
+numpy<2S
 scikit-learn==1.4.2
 matplotlib==3.8.4
 seaborn==0.13.2

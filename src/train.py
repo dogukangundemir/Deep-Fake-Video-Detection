@@ -45,7 +45,6 @@ def run(a):
             total+=x.size(0); running+=loss.item()*x.size(0)
         sched.step()
 
-        # ---- validation
         net.eval(); preds,targets = [],[]
         with torch.no_grad():
             for x,y in vl_dl:
