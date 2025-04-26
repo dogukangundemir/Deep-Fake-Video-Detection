@@ -1,0 +1,13 @@
+# central hyper-parameters
+BACKBONE       = "efficientnet_b0"      
+IMG_SIZE       = 224
+CLIP_LEN       = 1                       
+NUM_FRAMES     = 8                       
+MIXUP_ALPHA    = 0.4
+LABEL_SMOOTH   = 0.05
+DROPOUT_P      = 0.3
+LR             = 3e-4
+EPOCHS         = 15
+BATCH_SIZE     = 32
+AMP            = True                    
+SEED           = 42

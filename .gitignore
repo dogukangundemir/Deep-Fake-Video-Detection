@@ -1,0 +1,15 @@
+
+__pycache__/
+*.py[cod]
+*$py.class
+metadata_*.csv
+venv/
+.env
+
+
+data/
+
+outputs/
+
+.vscode/
+.idea/

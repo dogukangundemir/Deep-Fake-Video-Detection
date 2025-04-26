@@ -1,0 +1,50 @@
+{
+  "os": "Windows-10-10.0.26100-SP0",
+  "python": "CPython 3.11.9",
+  "startedAt": "2025-04-26T20:20:53.253863Z",
+  "args": [
+    "--data-csv",
+    "metadata_train.json",
+    "--frames-dir",
+    ".\\data\\frame\\train",
+    "--output",
+    "outputs"
+  ],
+  "program": "C:\\Users\\doguk\\OneDrive\\Masaüstü\\deppfeakevide\\Deep-Fake-Video-Detection\\src\\train.py",
+  "codePath": "src\\train.py",
+  "git": {
+    "remote": "https://github.com/dogukangundemir/Deep-Fake-Video-Detection.git",
+    "commit": "b8104a5ea10d18e9b2e90bae61eb4e34e5e906ca"
+  },
+  "email": "dogukangundem@hotmail.com",
+  "root": "C:\\Users\\doguk\\OneDrive\\Masaüstü\\deppfeakevide\\Deep-Fake-Video-Detection",
+  "host": "dio",
+  "executable": "C:\\Users\\doguk\\OneDrive\\Masaüstü\\deppfeakevide\\Deep-Fake-Video-Detection\\venv\\Scripts\\python.exe",
+  "codePathLocal": "src\\train.py",
+  "cpu_count": 6,
+  "cpu_count_logical": 12,
+  "gpu": "NVIDIA GeForce RTX 3070 Ti",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "499222155264",
+      "used": "460570918912"
+    }
+  },
+  "memory": {
+    "total": "17038180352"
+  },
+  "cpu": {
+    "count": 6,
+    "countLogical": 12
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 3070 Ti",
+      "memoryTotal": "8589934592",
+      "cudaCores": 6144,
+      "architecture": "Ampere"
+    }
+  ],
+  "cudaVersion": "12.6"
+}
