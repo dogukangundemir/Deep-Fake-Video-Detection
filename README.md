@@ -1,6 +1,5 @@
 # Deep-Fake-Video-Detection
 
-# DFDC Subset Detector
 
 **Setup**:
 ```bash
