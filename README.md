@@ -26,6 +26,6 @@ python src/train.py --train-csv metadata_train.csv --val-csv metadata_val.csv --
 python src/evaluate.py --model outputs\checkpoints\best.pt --csv metadata_val.csv
 python src\test_viz.py  --model outputs\checkpoints\best.pt --meta-csv metadata_val.csv --frames-dir data\frames --dropout 0.3
 
-#### 4 Create Kaggle submission
+#### 4 Inference 
 python src\inference.py --model outputs\checkpoints\best.pt --frames-dir data\frames --meta-test metadata_test.csv --sample-sub data\sample_submission.csv --out submission.csv
 
