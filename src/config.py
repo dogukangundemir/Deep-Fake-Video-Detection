@@ -6,6 +6,7 @@ NUM_FRAMES     = 8
 MIXUP_ALPHA    = 0.4
 LABEL_SMOOTH   = 0.05
 DROPOUT_P      = 0.3
+DROPOUT    = 0.3 
 LR             = 3e-4
 EPOCHS         = 15
 BATCH_SIZE     = 32

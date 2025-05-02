@@ -1,4 +1,4 @@
-# src/verify_pipeline.py
+
 import matplotlib.pyplot as plt
 import os
 from glob import glob
