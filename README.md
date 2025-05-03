@@ -3,7 +3,7 @@
 End-to-End Frames-Only Pipeline**
 
 
-# 1 Repository Layout {#repository-layout .unnumbered}
+# 1 Repository Layout 
 
     Deep-Fake-Video-Detection/
     │
