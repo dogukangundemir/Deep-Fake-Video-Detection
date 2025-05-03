@@ -50,21 +50,11 @@ End-to-End Frames-Only Pipeline**
 
 5.  **Validation dashboard (6 PNGs)**\
 
-        PS> python src\viz.py ^
-              --model      outputs\checkpoints\best.pt ^
-              --val-csv    metadata_val.csv ^
-              --image-root archive\images ^
-              --out        outputs\val_figs ^
-              --dropout    0.3
+        PS> python src\viz.py --model outputs\checkpoints\best.pt --val-csv metadata_val.csv --image-root archive\images --out outputs\val_figs --dropout 0.3
 
 6.  **Test dashboard (8 PNGs)**\
 
-        PS> python src\test_eval.py ^
-              --model     outputs\checkpoints\best.pt ^
-              --test-csv  metadata_test.csv ^
-              --image-root archive\images ^
-              --out       outputs\test_figs ^
-              --dropout   0.3
+        PS> python src\test_eval.py --model outputs\checkpoints\best.pt --test-csv metadata_test.csv --image-root archive\images --out outputs\test_figs --dropout 0.3
 
 # 3 Output Artifacts
 
