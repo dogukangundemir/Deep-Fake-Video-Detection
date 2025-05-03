@@ -71,7 +71,6 @@ End-to-End Frames-Only Pipeline**
 
 # 4 Key Implementation Details
 
-::: description
 Already-cropped faces $(224\times224)$ from DFDC; stratified _group_
 split prevents subject leakage.
 
