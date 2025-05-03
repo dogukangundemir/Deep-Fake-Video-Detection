@@ -42,14 +42,12 @@ End-to-End Frames-Only Pipeline**
 
 3.  **Build frame-level CSVs & train/val/test split**\
 
-        PS> python src\make_splits.py ^
-              --label-file metadata34.csv ^
-              --image-root archive\images
+        PS> python src\make_splits.py --label-file metadata34.csv --image-root archive\images
         # ➜ metadata_train.csv / metadata_val.csv / metadata_test.csv
 
 4.  **Train EfficientNet-B0 (freeze 3 epochs ⇒ unfreeze)**\
 
-        PS> python src\make_splits.py --label-file metadata34.csv --image-root archive\images
+        PS> python src\train.py --train-csv metadata_train.csv --val-csv metadata_val.csv --image-root archive\images 
         # outputs/checkpoints/best.pt
 
 5.  **Validation dashboard (6 PNGs)**\
