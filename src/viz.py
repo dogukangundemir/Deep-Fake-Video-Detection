@@ -32,21 +32,25 @@ def main(a):
             truth+=y.tolist()
     df_val=pd.read_csv(a.val_csv); df_val['pred']=preds; df_val['true']=truth
 
-    # ROC
+    # roc
     fpr,tpr,_=roc_curve(truth,preds); auc=roc_auc_score(truth,preds)
     plt.plot(fpr,tpr); plt.plot([0,1],[0,1],'--'); plt.title(f"ROC AUC={auc:.3f}")
-    plt.savefig(f"{a.out}/roc_curve.png",dpi=300); plt.close()
-    # PR
+    plt.savefig(f"{a.out}/roc_curve.png",dpi=300); plt.close()\
+        
+    # pr
     prec,rec,_=precision_recall_curve(truth,preds); ap=average_precision_score(truth,preds)
     plt.plot(rec,prec); plt.title(f"PR AP={ap:.3f}"); plt.savefig(f"{a.out}/pr_curve.png",dpi=300); plt.close()
-    # CM
+    
+    # cm
     cm=confusion_matrix(truth,np.array(preds)>0.5)
     sns.heatmap(cm,annot=True,fmt='d',cmap='Blues'); plt.title('Confusion'); plt.savefig(f"{a.out}/cmatrix.png",dpi=300); plt.close()
-    # Metrics bar
+    
+    # metrics bar
     acc=accuracy_score(truth,np.array(preds)>0.5); f1=f1_score(truth,np.array(preds)>0.5)
     sns.barplot(x=['AUC','ACC','F1'],y=[auc,acc,f1]); plt.ylim(0,1); plt.title('Score summary')
     plt.savefig(f"{a.out}/metrics_bar.png",dpi=300); plt.close()
-    # FP / FN grids
+    
+    # fp / fn grids
     save_grid(df_val,a.image_root,'FP',f"{a.out}/false_pos_grid.png",top_n=9,largest=True)
     save_grid(df_val,a.image_root,'FN',f"{a.out}/false_neg_grid.png",top_n=9,largest=False)
     print("Saved all visualisations to",a.out)

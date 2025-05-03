@@ -29,7 +29,7 @@ def main(a):
     mtcnn = MTCNN(image_size=IMG_SIZE, margin=20, device=get_device())
     os.makedirs(a.out_frames, exist_ok=True)
 
-    # --- TRAIN
+    # TRAIN
     meta_path = os.path.join(a.train_dir, "metadata.json")
     train_meta = json.load(open(meta_path))
     rows = []
@@ -47,7 +47,7 @@ def main(a):
     df.iloc[train_idx].to_csv(a.meta_train, index=False)
     df.iloc[val_idx]  .to_csv(a.meta_val,   index=False)
 
-    # --- TEST
+    # TEST
     test_fns  = [l.split(',')[0] for l in open(a.sample_sub).read().splitlines()[1:]]
     rows = []
     for fn in tqdm(test_fns, desc="Cropping test"):

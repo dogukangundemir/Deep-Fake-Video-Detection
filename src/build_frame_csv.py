@@ -8,7 +8,6 @@ def normalise_id(s: str) -> str:
 def main(a):
     df_vid = pd.read_csv(a.label_file)
 
-    # detect which column holds the ID
     if 'folder' in df_vid.columns:
         id_col = 'folder'
     elif 'filename' in df_vid.columns:

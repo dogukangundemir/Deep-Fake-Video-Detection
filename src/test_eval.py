@@ -36,33 +36,38 @@ def main(a):
             truth+=y.tolist()
     df=pd.read_csv(a.test_csv); df['pred']=preds; df['true']=truth
 
-    # 1—ROC
+    # 1—roc
     fpr,tpr,_=roc_curve(truth,preds); auc=roc_auc_score(truth,preds)
     plt.plot(fpr,tpr); plt.plot([0,1],[0,1],'--'); plt.title(f"ROC AUC={auc:.3f}")
     plt.savefig(f"{a.out}/roc_curve.png",dpi=300); plt.close()
-    # 2—PR
+    
+    # 2—pr
     prec,rec,_=precision_recall_curve(truth,preds)
     ap=average_precision_score(truth,preds)
     plt.plot(rec,prec); plt.title(f"PR AP={ap:.3f}")
     plt.savefig(f"{a.out}/pr_curve.png",dpi=300); plt.close()
-    # 3—Confusion
+    
+    # 3—confusion
     cm=confusion_matrix(truth,np.array(preds)>0.5)
     sns.heatmap(cm,annot=True,fmt='d',cmap='Blues'); plt.title('Confusion matrix')
     plt.savefig(f"{a.out}/cmatrix.png",dpi=300); plt.close()
-    # 4—Metrics bar
+    
+    # 4—metrics bar
     acc=accuracy_score(truth,np.array(preds)>0.5)
     f1 =f1_score(truth,np.array(preds)>0.5)
     sns.barplot(x=['AUC','ACC','F1'],y=[auc,acc,f1]); plt.ylim(0,1)
     plt.title('Score summary'); plt.savefig(f"{a.out}/metrics_bar.png",dpi=300); plt.close()
-    # 5—Calibration curve
+    
+    # 5—calibration curve
     prob_true,prob_pred=calibration_curve(truth,preds,n_bins=10)
     plt.plot(prob_pred,prob_true,'o-'); plt.plot([0,1],[0,1],'--')
     plt.title('Calibration curve'); plt.xlabel('Predicted'); plt.ylabel('Empirical')
     plt.savefig(f"{a.out}/calib_curve.png",dpi=300); plt.close()
-    # 6—Score histogram
+    
+    # 6—score histogram
     plt.hist(preds,bins=30,alpha=0.7); plt.title('Histogram of probabilities')
     plt.savefig(f"{a.out}/score_hist.png",dpi=300); plt.close()
-    # 7 & 8 — FP / FN grids
+    # 7 & 8 — fp / fn grids
     save_grid(df,a.image_root,'FP',f"{a.out}/false_pos_grid.png")
     save_grid(df,a.image_root,'FN',f"{a.out}/false_neg_grid.png",largest=False)
 
@@ -71,7 +76,7 @@ def main(a):
 if __name__=="__main__":
     ap=argparse.ArgumentParser()
     ap.add_argument('--model',      required=True)
-    ap.add_argument('--test-csv',   required=True)  # metadata_test.csv WITH labels
+    ap.add_argument('--test-csv',   required=True)  
     ap.add_argument('--image-root', required=True)
     ap.add_argument('--out',        default='outputs/test_figs')
     ap.add_argument('--device',     default='cuda')
