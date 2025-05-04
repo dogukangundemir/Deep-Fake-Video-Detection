@@ -1,6 +1,9 @@
 **Deep-Fake Video Detection\
 End-to-End Frames-Only Pipeline**
 
+[Wandb Report](https://wandb.ai/dogukangundemir/dfdc-detector/reports/Untitled-Report--VmlldzoxMjYwNTMxNQ)
+
+
 # 1 Repository Layout
 
     Deep-Fake-Video-Detection/
